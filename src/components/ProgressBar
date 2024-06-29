@@ -1,0 +1,44 @@
+import { useState } from "react";
+
+let _progress = 0;
+export function ProgressBar({expectedTimeSec, callback, states, setState}) {
+  
+  let interval;
+  let [progress, setProgress] = useState(0);
+  
+  function updateProgress() {
+    if(expectedTimeSec === -1) {
+      _progress = 100
+      setProgress(_progress);
+      clearInterval(interval);
+      return;
+    }
+
+    // If expected time is not given then take it as 60sec
+    let _step = 100/(expectedTimeSec ? expectedTimeSec : 60);   // 100/50 - 100 is the percentage and 50 is the seconds
+    _progress = _progress + _step;
+    setProgress(_progress);
+
+    if(Math.round(_progress) === 100) {
+      console.log(`clearing interval from updateProgress`);
+      clearInterval(interval);
+      callback(states, setState);
+      return;
+    }
+  }
+
+  useEffect(()=>{
+    console.log(`initializing interval`);
+    updateProgress();
+    interval = setInterval(() => {
+      updateProgress();
+    }, 1000);
+
+    return () => {
+      console.log(`clearing interval from useEffect`);
+      clearInterval(interval);
+    };
+  }, []);
+
+  return <progress value={progress} max={100} />
+}
